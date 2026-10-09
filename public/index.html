@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="de" translate="no">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="google" content="notranslate">
+  <title>Winner Library · Content Revenue OS</title>
+  <link rel="icon" href="data:,">
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="#/">
+      <span class="brand-mark">CR</span>
+      <span class="brand-text">
+        <span class="brand-os">Content Revenue OS</span>
+        <span class="brand-module">Winner Library</span>
+      </span>
+    </a>
+    <nav class="topnav">
+      <a class="nav-link" href="#/" id="nav-dashboard">Dashboard</a>
+      <a class="btn btn-primary" href="#/new" id="nav-new">+ Winner hinzufügen</a>
+      <div class="menu">
+        <button type="button" class="btn btn-ghost" id="menu-data">Daten ▾</button>
+        <div class="menu-panel hidden" id="menu-data-panel">
+          <a href="/api/export.csv" id="export-csv" download>Alles als CSV exportieren</a>
+          <a href="/api/export.json" id="export-json" download>Alles als JSON exportieren</a>
+          <button type="button" id="import-json">JSON importieren…</button>
+        </div>
+      </div>
+      <input type="file" id="import-file" accept=".json,application/json" class="hidden">
+    </nav>
+  </header>
+
+  <main id="app" class="container">
+    <p class="muted">Wird geladen…</p>
+  </main>
+
+  <div id="modal" class="modal hidden" role="dialog" aria-modal="true">
+    <div class="modal-box">
+      <h3 id="modal-title"></h3>
+      <div id="modal-body"></div>
+      <div class="modal-actions">
+        <button type="button" class="btn btn-ghost-dark" id="modal-cancel">Abbrechen</button>
+        <button type="button" class="btn btn-danger" id="modal-confirm">Bestätigen</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="toasts" class="toasts"></div>
+
+  <script src="/app.js"></script>
+</body>
+</html>

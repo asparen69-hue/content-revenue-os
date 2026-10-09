@@ -1,0 +1,25 @@
+# Geschaeftsdaten und Sicherungen (nie hochladen)
+data/
+
+# Medien / Stimmproben
+audio/
+*.mp3
+*.mp4
+*.wav
+*.mov
+*.m4v
+
+# Zugangsdaten und lokale Konfiguration
+.env
+.env.*
+*.key
+*.pem
+.mcp.json
+.claude/settings.local.json
+credentials*.json
+
+# Logs und Systemdateien
+*.log
+Thumbs.db
+desktop.ini
+~$*
