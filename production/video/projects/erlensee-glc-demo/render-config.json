@@ -1,0 +1,84 @@
+{
+  "project": "erlensee-glc-demo",
+  "format": {
+    "width": 1080,
+    "height": 1920,
+    "fps": 30,
+    "duration_seconds": 20,
+    "container": "mp4",
+    "video_codec": "h264"
+  },
+  "scenes": [
+    {
+      "id": 1,
+      "asset_ref": "canva:MAHXtC1GCdg",
+      "label": "Frontansicht",
+      "start": 0,
+      "duration": 4,
+      "text": "GLC Coupé. AMG-Line. 4MATIC.",
+      "motion": "slow_zoom_in",
+      "transition_out": "crossfade"
+    },
+    {
+      "id": 2,
+      "asset_ref": "canva:MAHXtDhpLcU",
+      "label": "Dreiviertelansicht",
+      "start": 4,
+      "duration": 4,
+      "text": "163 PS · AMG Night-Paket",
+      "motion": "slow_pan_right",
+      "transition_out": "crossfade"
+    },
+    {
+      "id": 3,
+      "asset_ref": "canva:MAHXtBlxoFI",
+      "label": "Cockpit",
+      "start": 8,
+      "duration": 4,
+      "text": "Widescreen Cockpit + MBUX",
+      "motion": "slow_zoom_in",
+      "transition_out": "crossfade"
+    },
+    {
+      "id": 4,
+      "asset_ref": "canva:MAHXtHl3u6c",
+      "label": "Assistenz/Display",
+      "start": 12,
+      "duration": 4,
+      "text": "Kamera · Brems-Assistent · Totwinkel",
+      "motion": "slow_pan_left",
+      "transition_out": "crossfade"
+    },
+    {
+      "id": 5,
+      "asset_ref": "canva:MAHXtJ-Pzkg",
+      "label": "Heckansicht",
+      "start": 16,
+      "duration": 4,
+      "text": "Jetzt bei Erlensee Automobile ansehen",
+      "motion": "slow_zoom_out",
+      "transition_out": "none"
+    }
+  ],
+  "text_style": {
+    "position": "lower_third",
+    "alignment": "center",
+    "safe_margin_px": 120,
+    "font_weight": "bold",
+    "max_lines": 2
+  },
+  "audio": {
+    "voiceover": {
+      "enabled": false,
+      "provider": "ElevenLabs",
+      "voice_name": "Andi 02 Short"
+    },
+    "music": {
+      "enabled": false,
+      "source": "tbd"
+    }
+  },
+  "approval": {
+    "publish_without_owner_go": false
+  }
+}
