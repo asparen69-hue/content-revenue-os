@@ -23,7 +23,7 @@ function Call([string]$Method, [string]$Path, $Body, [hashtable]$Headers = @{}, 
         $r = Invoke-WebRequest @params
         $text = [Text.Encoding]::UTF8.GetString($r.RawContentStream.ToArray())
         return @{ status = [int]$r.StatusCode; text = $text; headers = $r.Headers }
-    } catch [System.Net.WebException] {
+    } catch {
         $resp = $_.Exception.Response
         if ($null -eq $resp) { throw }
         # PowerShell 5.1 has already read the error body into ErrorDetails.
@@ -39,7 +39,7 @@ Check 'server responds' ($r.status -eq 200)
 $r = Call GET '/' $null
 Check 'dashboard page is served' ($r.status -eq 200 -and $r.text -match 'Winner Library')
 
-$before = @((Call GET '/api/items' $null).text | ConvertFrom-Json)
+$before = (Call GET '/api/items' $null).text | ConvertFrom-Json
 $countBefore = @($before | ForEach-Object { $_ }).Count
 
 # --- create
@@ -96,12 +96,28 @@ $r = Call GET '/api/export.csv' $null
 Check 'CSV export contains test record + header' ($r.status -eq 200 -and $r.text -match 'ZZ TEST RECORD' -and $r.text -match 'Opportunity Score \(0-100\)')
 Check 'CSV download header set' ([string]$r.headers['Content-Disposition'] -match 'attachment')
 
+# --- import approval and malformed input: no writes, even for valid data
+$r = Call POST '/api/import' @(@{ title = 'must not be imported' })
+Check 'import without explicit approval blocked (403)' ($r.status -eq 403)
+foreach ($raw in @('[]', '[null]', '[[{"title":"nested"}]]', '{"items":[]}', '{"items":[null]}')) {
+    $r = Call POST '/api/import' $raw @{ 'X-Winner-Import-Approved' = 'true' }
+    Check "invalid import shape rejected: $raw" ($r.status -eq 400) $r.text
+}
+$r = Call POST '/api/items' '[{"title":"array is not an object"}]'
+Check 'single-item array rejected by create endpoint' ($r.status -eq 400)
+$r = Call POST '/api/items' '{"title":"overflow","views":1e100}'
+Check 'numeric overflow rejected' ($r.status -eq 400)
+$r = Call POST '/api/items' '{"title":"infinity","offerPrice":1e309}'
+Check 'non-finite money rejected' ($r.status -eq 400)
+$r = Call GET '/assistant.html' $null
+Check 'assistant served with external CSP-compatible scripts' ($r.status -eq 200 -and $r.text -match 'src="/assistant.js"' -and $r.text -notmatch '<script>')
+
 # --- import (atomic validation + update by id)
 $bad = @{ items = @(@{ title = 'ok item' }, @{ title = 'bad item'; status = 'Nope' }) }
-$r = Call POST '/api/import' $bad
+$r = Call POST '/api/import' $bad @{ 'X-Winner-Import-Approved' = 'true' }
 $countMid = @(((Call GET '/api/items' $null).text | ConvertFrom-Json) | ForEach-Object { $_ }).Count
 Check 'invalid import rejected, nothing changed' ($r.status -eq 400 -and $countMid -eq ($countBefore + 1)) $r.text
-$r = Call POST '/api/import' @(@{ id = $id; title = 'ZZ TEST RECORD - delete me'; notes = 'updated via import' })
+$r = Call POST '/api/import' @(@{ id = $id; title = 'ZZ TEST RECORD - delete me'; notes = 'updated via import' }) @{ 'X-Winner-Import-Approved' = 'true' }
 $imp = $r.text | ConvertFrom-Json
 Check 'valid import updates existing id' ($r.status -eq 200 -and $imp.updated -eq 1 -and $imp.added -eq 0) $r.text
 $after = (Call GET "/api/items/$id" $null).text | ConvertFrom-Json

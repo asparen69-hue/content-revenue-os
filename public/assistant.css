@@ -1,0 +1,11 @@
+
+body{font:16px system-ui,Arial,sans-serif;background:#f2f5fa;color:#14213d;margin:0}
+header{background:#0d1d3d;color:white;padding:18px 5%}main{max-width:900px;margin:24px auto;padding:0 16px}
+section{background:white;border:1px solid #dce3ef;border-radius:12px;padding:20px;margin:16px 0}
+label{display:block;font-weight:650;margin:12px 0 5px}textarea,input{width:100%;box-sizing:border-box;padding:11px;border:1px solid #aebbd0;border-radius:6px;font:inherit}textarea{min-height:140px}
+button{background:#ec7515;color:white;border:0;border-radius:7px;padding:11px 15px;font:inherit;cursor:pointer;margin:8px 8px 0 0}
+button.secondary{background:#24385d}button:disabled{opacity:.45;cursor:not-allowed}
+pre{white-space:pre-wrap;overflow-wrap:anywhere;background:#f4f6fa;padding:15px;border-radius:8px}
+small,.hint{color:#52627a}.error{color:#a32020}.ok{color:#176039}a{color:inherit}
+
+.approval input{width:auto;margin-right:8px}

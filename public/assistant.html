@@ -1,80 +1,19 @@
 <!doctype html>
 <html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>KI-Erfassungsassistent – Vorschau</title>
-<style>
-body{font:16px system-ui,Arial,sans-serif;background:#f2f5fa;color:#14213d;margin:0}
-header{background:#0d1d3d;color:white;padding:18px 5%}main{max-width:900px;margin:24px auto;padding:0 16px}
-section{background:white;border:1px solid #dce3ef;border-radius:12px;padding:20px;margin:16px 0}
-label{display:block;font-weight:650;margin:12px 0 5px}textarea,input{width:100%;box-sizing:border-box;padding:11px;border:1px solid #aebbd0;border-radius:6px;font:inherit}textarea{min-height:140px}
-button{background:#ec7515;color:white;border:0;border-radius:7px;padding:11px 15px;font:inherit;cursor:pointer;margin:8px 8px 0 0}
-button.secondary{background:#24385d}button:disabled{opacity:.45;cursor:not-allowed}
-pre{white-space:pre-wrap;overflow-wrap:anywhere;background:#f4f6fa;padding:15px;border-radius:8px}
-small,.hint{color:#52627a}.error{color:#a32020}.ok{color:#176039}a{color:inherit}
-</style></head><body>
+<link rel="stylesheet" href="/assistant.css"></head><body>
 <header><strong>CONTENT REVENUE OS · KI-Erfassungsassistent (Entwicklungsversion)</strong></header>
 <main><p>Erstellt einen <strong>prüfbaren JSON-Entwurf</strong> für die Winner Library. Keine automatische Videoanalyse und keine automatische Speicherung. Unbekannte Daten leer lassen.</p>
 <section><h2>1. Quelle und KI-Vorbereitung</h2>
 <label for="source">Quelltext / Transkript / Beobachtungen</label><textarea id="source" placeholder="Hier den tatsächlichen Inhalt des Videos einfügen ..."></textarea>
 <button id="prompt" type="button">Analyseauftrag kopieren</button>
-<p class="hint">Füge den kopierten Auftrag in ChatGPT oder Claude ein und kopiere die JSON-Antwort anschließend unten hinein. Kein zusätzliches Abo oder API-Schlüssel erforderlich.</p></section>
+<p class="hint">Füge den kopierten Auftrag in ChatGPT oder Claude ein und kopiere die JSON-Antwort anschließend unten hinein. Nutze einen vorhandenen oder kostenlosen Zugang; kein API-Schlüssel erforderlich.</p></section>
 <section><h2>2. JSON-Entwurf prüfen</h2>
 <label for="json">JSON aus der KI-Antwort</label><textarea id="json" spellcheck="false" placeholder='{"title":"Beispiel","platform":"Instagram","researchSource":"ChatGPT","status":"Discovered"}'></textarea>
 <button id="check" type="button">Entwurf prüfen</button><button id="export" type="button" disabled>JSON herunterladen</button>
+<label class="approval"><input id="approval" type="checkbox" disabled>Ich habe alle Angaben gegen die Quelle geprüft und gebe diesen Entwurf zum Export frei.</label>
 <p id="result" aria-live="polite"></p><pre id="preview" hidden></pre></section>
 <section><h2>3. Import nach Freigabe</h2><p>Prüfe alle Angaben gegen die Quelle. Lade die exportierte JSON-Datei anschließend in der Winner Library über <strong>Daten → JSON importieren</strong> hoch. Erst dort erfolgt nach Bestätigung eine Speicherung.</p><p><a href="/">Zur Winner Library</a></p></section></main>
-<script>
-'use strict';
-let schema=null, approved=null;
-const $=id=>document.getElementById(id);
-const result=$('result');
-const invalidate=()=>{$('export').disabled=true;approved=null;$('preview').hidden=true};
-$('json').addEventListener('input',invalidate);
-async function loadSchema(){
- if(schema)return schema;
- const response=await fetch('/api/schema');
- if(!response.ok)throw Error('Schema konnte nicht geladen werden. Starte die Winner Library.');
- schema=await response.json();return schema;
-}
-$('prompt').addEventListener('click',async()=>{
- try{
- const s=await loadSchema();
- const allowed=s.fields.filter(f=>f.type!=='computed').map(f=>f.key+(f.options?' (Optionen: '+f.options.join(', ')+')':'')).join('\n');
- const prompt='Analysiere ausschließlich den folgenden Quelltext für meine Winner Library. Antworte mit genau einem JSON-Objekt ohne Markdown. Nutze nur belegte Informationen; erfinde keine Aufrufe, Follower, Verkäufe, Preise, Bewertungen oder URLs. Unbekannte Felder weglassen. Pflicht: title. Setze researchSource auf ChatGPT (bei ChatGPT) bzw. Claude Research (bei Claude), status auf Discovered. Verwende ausschließlich diese Feldnamen und bei Auswahlfeldern ausschließlich die angegebenen Optionen:\n'+allowed+'\n\nQUELLTEXT:\n'+$('source').value;
- if(!$('source').value.trim())throw Error('Bitte zuerst einen Quelltext eingeben.');
- await navigator.clipboard.writeText(prompt);result.className='ok';result.textContent='Analyseauftrag kopiert.';
- }catch(e){result.className='error';result.textContent=e.message;}
-});
-$('check').addEventListener('click',async()=>{
- invalidate();
- try{
- const s=await loadSchema();
- let data=JSON.parse($('json').value.trim());
- if(Array.isArray(data)||!data||typeof data!=='object')throw Error('Ein einzelnes JSON-Objekt erwartet.');
- const byKey=new Map(s.fields.filter(f=>f.type!=='computed').map(f=>[f.key,f]));
- const errors=[],clean={};
- for(const [key,value] of Object.entries(data)){
-  const f=byKey.get(key);
-  if(!f){errors.push('Unbekanntes Feld: '+key);continue;}
-  if(value===null||value==='')continue;
-  if(f.options&&!f.options.includes(value)){errors.push(key+': nicht erlaubte Auswahl');continue;}
-  if(f.type==='url'&&(!/^https?:\/\//i.test(value)||typeof value!=='string')){errors.push(key+': gültige http(s)-URL erforderlich');continue;}
-  if(['score','number','money'].includes(f.type)&&(!Number.isFinite(Number(value))||Number(value)<0||(f.type==='score'&&(Number(value)<1||Number(value)>10||!Number.isInteger(Number(value)))))){errors.push(key+': ungültige Zahl');continue;}
-  if(f.type==='date'&&(!/^\d{4}-\d{2}-\d{2}$/.test(value)||Number.isNaN(Date.parse(value)))){errors.push(key+': Datum JJJJ-MM-TT erforderlich');continue;}
-  if(!['score','number','money'].includes(f.type)&&typeof value!=='string'){errors.push(key+': Text erwartet');continue;}
-  clean[key]=['score','number','money'].includes(f.type)?Number(value):value;
- }
- if(!clean.title||typeof clean.title!=='string'||!clean.title.trim())errors.push('Titel fehlt.');
- if(errors.length)throw Error(errors.join(' | '));
- if(!clean.status)clean.status='Discovered';
- if(!clean.researchSource)clean.researchSource='Manual';
- approved=clean;$('export').disabled=false;$('preview').hidden=false;
- $('preview').textContent=JSON.stringify(clean,null,2);
- result.className='ok';result.textContent='Strukturprüfung bestanden. Inhaltliche Richtigkeit bitte selbst kontrollieren.';
- }catch(e){result.className='error';result.textContent=e.message;}
-});
-$('export').addEventListener('click',()=>{
- if(!approved)return;
- const blob=new Blob([JSON.stringify([approved],null,2)],{type:'application/json'});
- const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download='winner-entwurf.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);
-});
-</script></body></html>
+<script src="/assistant-validation.js" defer></script>
+<script src="/assistant.js" defer></script>
+</body></html>

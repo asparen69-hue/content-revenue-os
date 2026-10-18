@@ -83,13 +83,38 @@ The 8 criteria all count equally: Pain intensity, Urgency, Purchase intent, Cont
 
 **For future agents / tools:** the app has a small local API (create, update, import) that validates every record the same way. It's documented in `CLAUDE.md`, and the field names are in `config\winner-fields.json`.
 
+## KI-Erfassungsassistent (Entwicklungszweig)
+
+Nach dem lokalen Start unter **http://localhost:8787/assistant.html** erreichbar.
+Quelltext einfügen, Analyseauftrag in einem vorhandenen oder kostenlosen KI-Zugang verwenden,
+JSON prüfen und nach dem Quellenabgleich den Export ausdrücklich freigeben.
+Unbekannte Werte bleiben leer; eine Strukturprüfung kann die Faktenprüfung nicht ersetzen.
+Der Export schreibt nichts in die Library. Erst **Daten → JSON importieren → Importieren** speichert.
+Details: [docs/ki-erfassungsassistent-v1.md](docs/ki-erfassungsassistent-v1.md).
+
 ## Tests
 
-With the app running, open PowerShell in this folder and run:
+Die Tests gegen eine **temporäre Kopie ohne vorhandene Geschäftsdaten** ausführen:
 
-```
-powershell -ExecutionPolicy Bypass -File tests\api-smoke-test.ps1
-powershell -ExecutionPolicy Bypass -File tests\ui-test.ps1
+```powershell
+powershell -ExecutionPolicy Bypass -File tests\run-isolated.ps1
+powershell -ExecutionPolicy Bypass -File tests\run-isolated.ps1 -IncludeUi
 ```
 
-Both create a temporary test record, exercise the app, and delete the record again.
+Der zweite Aufruf benötigt Microsoft Edge. Der Starter kopiert nur Code, Schema und
+Beispielkonfiguration, startet einen eigenen Server auf einem freien Port und entfernt
+anschließend die Testkopie. Die Anwendung selbst benötigt weiterhin keine Installation.
+Die einzelnen Skripte `api-smoke-test.ps1` und `ui-test.ps1` schreiben Testeinträge;
+sie daher nicht direkt gegen den produktiven Server starten.
+
+Zusätzliche Entwicklertests (Node erforderlich, keine Produktabhängigkeit):
+
+```sh
+node tests/assistant-validation.test.js
+node tests/assistant-browser.test.js
+```
+
+Der Browsertest benötigt zusätzlich Playwright, Chromium und PowerShell und startet
+seine eigene temporäre Kopie. Auf Linux kann `WINNER_TEST_POWERSHELL` den Pfad zu
+`pwsh` und `WINNER_TEST_CHROMIUM` den Chromium-Pfad festlegen. Das ist kein Ersatz
+für die Abnahme auf Windows PowerShell 5.1 und Edge.

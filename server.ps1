@@ -64,9 +64,11 @@ function ConvertTo-NumberValue($Value, [string]$Label, [bool]$WholeOnly, $Errors
         elseif ($s -match '^\d+,\d{1,2}$') { $num = [double]::Parse(($s -replace ',', '.'), $Invariant) }
         else { $Errors.Add("${Label}: '$s' ist keine g${ue}ltige Zahl."); return $null }
     }
+    if ([double]::IsNaN($num) -or [double]::IsInfinity($num)) { $Errors.Add("${Label}: keine endliche Zahl."); return $null }
     if ($num -lt 0) { $Errors.Add("${Label}: darf nicht negativ sein."); return $null }
     if ($WholeOnly) {
         if ($num -ne [math]::Floor($num)) { $Errors.Add("${Label}: muss eine ganze Zahl sein."); return $null }
+        if ($num -ge 9223372036854775808.0) { $Errors.Add("${Label}: Zahl ist zu gross."); return $null }
         return [long]$num
     }
     return [math]::Round($num, 2)
@@ -284,7 +286,15 @@ function Read-JsonBody($Ctx) {
     $text = $reader.ReadToEnd()
     $reader.Close()
     if ([string]::IsNullOrWhiteSpace($text)) { throw 'Die Anfrage ist leer.' }
-    try { return ($text | ConvertFrom-Json) } catch { throw "Die Anfrage enth${ae}lt kein g${ue}ltiges JSON." }
+    try {
+        # Validate the original document before wrapping it (prevents sibling-property injection).
+        $null = $text | ConvertFrom-Json
+        # A property preserves arrays even when ConvertFrom-Json enumerates its top-level result.
+        # -NoEnumerate is unavailable in Windows PowerShell 5.1.
+        $envelope = ('{"value":' + $text + '}') | ConvertFrom-Json
+        $parsed = $envelope.value
+        return ,$parsed
+    } catch { throw "Die Anfrage enth${ae}lt kein g${ue}ltiges JSON." }
 }
 
 $MimeTypes = @{
@@ -299,9 +309,10 @@ $MimeTypes = @{
 
 function Send-StaticFile($Ctx, [string]$UrlPath) {
     if ($UrlPath -eq '/') { $UrlPath = '/index.html' }
-    $rel = [Uri]::UnescapeDataString($UrlPath).TrimStart('/') -replace '/', '\'
+    $separator = [IO.Path]::DirectorySeparatorChar
+    $rel = [Uri]::UnescapeDataString($UrlPath).TrimStart('/') -replace '[/\\]', [string]$separator
     $full = [IO.Path]::GetFullPath((Join-Path $PublicDir $rel))
-    if (-not $full.StartsWith($PublicDir + '\', [StringComparison]::OrdinalIgnoreCase) -or -not (Test-Path -LiteralPath $full -PathType Leaf)) {
+    if (-not $full.StartsWith($PublicDir + $separator, [StringComparison]::OrdinalIgnoreCase) -or -not (Test-Path -LiteralPath $full -PathType Leaf)) {
         Send-Error $Ctx 404 'Not found'
         return
     }
@@ -402,6 +413,8 @@ function Invoke-Request($Ctx) {
     }
 
     if ($path -eq '/api/import' -and $method -eq 'POST') {
+        # The UI sends this only after the user confirms the selected file.
+        if ($req.Headers['X-Winner-Import-Approved'] -cne 'true') { Send-Error $Ctx 403 'Explicit import approval is required.'; return }
         $body = Read-JsonBody $Ctx
         # Accepts our own export format ({ items: [...] }) or a plain array of items.
         if ($null -eq $body) { $incoming = @() }

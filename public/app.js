@@ -61,8 +61,8 @@ function computeOverall(values) {
   return { score: Math.round(avg * 10), count: nums.length };
 }
 
-async function api(method, url, body) {
-  const opts = { method, headers: {} };
+async function api(method, url, body, headers = {}) {
+  const opts = { method, headers: { ...headers } };
   if (body !== undefined) {
     opts.headers['Content-Type'] = 'application/json';
     opts.body = JSON.stringify(body);
@@ -433,14 +433,14 @@ function setupDataMenu() {
     let data;
     try { data = JSON.parse(await file.text()); }
     catch { toast('Diese Datei ist kein gültiges JSON. Es wurde nichts importiert.', true); return; }
-    const list = Array.isArray(data) ? data : Array.isArray(data.items) ? data.items : [data];
+    const list = Array.isArray(data) ? data : Array.isArray(data?.items) ? data.items : [data];
     const ok = await confirmDialog('JSON importieren?',
       `<p>Die Datei <strong>${esc(file.name)}</strong> enthält <strong>${list.length}</strong> Einträge.</p>
        <ul class="muted"><li>Neue Einträge werden hinzugefügt.</li><li>Einträge mit bereits vorhandener ID werden aktualisiert.</li>
        <li>Jeder Eintrag wird vorher geprüft. Ist etwas ungültig, wird nichts importiert.</li><li>Vorher wird automatisch eine Sicherung deiner aktuellen Daten erstellt.</li></ul>`, 'Importieren');
     if (!ok) return;
     try {
-      const r = await api('POST', '/api/import', data);
+      const r = await api('POST', '/api/import', data, { 'X-Winner-Import-Approved': 'true' });
       await loadItems();
       toast(`Import abgeschlossen: ${r.added} hinzugefügt, ${r.updated} aktualisiert.`);
       route();

@@ -50,7 +50,7 @@ All on `http://localhost:8787`. Writes require `Content-Type: application/json`;
 | POST | `/api/items` | Create one item (JSON object). `title` required. Returns 400 + `details[]` on validation errors |
 | PUT | `/api/items/{id}` | Partial update — only sent fields change; send `""` to clear |
 | DELETE | `/api/items/{id}` | Delete |
-| POST | `/api/import` | Bulk add/update: `[...]` or `{ "items": [...] }`. All-or-nothing validation; matching `id` = update |
+| POST | `/api/import` | Requires `X-Winner-Import-Approved: true` after explicit user approval. Bulk add/update: `[...]` or `{ "items": [...] }`. All-or-nothing validation; matching `id` = update |
 | GET | `/api/export.json` / `/api/export.csv` | Full exports |
 
 Agents should set `researchSource` (e.g. `"Astra"`, `"Claude Research"`), `status: "Discovered"`, and fill `performanceSignals` only with observed facts.
@@ -61,4 +61,4 @@ With the server running:
 - `powershell -ExecutionPolicy Bypass -File tests\api-smoke-test.ps1` — API, validation, security guards, import/export (29 checks)
 - `powershell -ExecutionPolicy Bypass -File tests\ui-test.ps1` — drives headless Edge through the real UI (28 checks)
 
-Both create a temporary test record and delete it again.
+Both create a temporary test record and delete it again. Never run these against business data. Prefer `powershell -ExecutionPolicy Bypass -File tests\run-isolated.ps1` (add `-IncludeUi` for Edge): this starts a disposable server with copied code/config only and removes it after the checks. Additional offline validation and isolated browser checks are documented in README.md.
