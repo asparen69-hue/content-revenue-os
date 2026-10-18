@@ -95,9 +95,14 @@ Am 18.10.2026 in der Linux-Cloud erfolgreich geprüft:
   laufendem Import und Doppelklick, Importfehler, unklare Netzwerkantwort,
   automatische Strukturprüfung, Codeblock-Eingabe und Zwischenablage-Ersatzweg.
 
-Die vorherige Version (`5905a2f`) wurde laut Nutzer erfolgreich auf Windows getestet.
-Die hier dokumentierten neuen Änderungen wurden mit PowerShell 7.4.21 und Chromium
-in der Cloud geprüft; ihre erneute Abnahme auf **Windows PowerShell 5.1 und Edge**
-steht noch aus. Der Server bleibt ASCII-only und
-verwendet keine PowerShell-7-spezifischen Parameter oder Sprachkonstrukte.
-Es wurden keine kostenpflichtigen APIs, Abonnements oder Produktabhängigkeiten ergänzt.
+Die Windows-/Edge-Abnahme für Commit `6964489` wurde am 18.10.2026 erfolgreich
+auf dem PC des Nutzers abgeschlossen. Die vom Nutzer bereitgestellten Screenshots
+bestätigen die erfolgreichen API- und Library-UI-Tests sowie 15 gezielte
+Assistentenprüfungen und die Importsicherung. Getestet wurde ausschließlich in
+separaten temporären Testordnern mit eigenen Testdaten.
+Details und Nachweisgrenzen: [Windows-Abnahme](windows-abnahme-6964489.md).
+
+Der Server bleibt ASCII-only und verwendet keine PowerShell-7-spezifischen Parameter
+oder Sprachkonstrukte. Es wurden keine kostenpflichtigen APIs, Abonnements oder
+Produktabhängigkeiten ergänzt. Die Abnahme ist keine Freigabe für Merge, Deployment
+oder die Übernahme in die bestehende Winner Library.

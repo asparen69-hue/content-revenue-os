@@ -60,5 +60,9 @@ After making the label changes:
   erneut. Quelltext- oder Entwurfsänderungen setzen die Freigabe zurück.
 - Isoliert geprüft: 43 Validierungstests, 7 Hilfsfunktionstests, 41 API-Prüfungen,
   28 bestehende UI-Prüfungen und der erweiterte Assistenten-Browsertest.
-- Windows-Tests der Vorversion laut Nutzer erfolgreich; erneute Windows-Abnahme
-  dieser Änderungen steht aus. Schema, Nutzerdaten und Windows-Starter unverändert.
+- Windows-/Edge-Abnahme von Commit `6964489` am 18.10.2026 erfolgreich:
+  API-/Library-UI-Tests sowie gezielter Assistententest in separaten temporären
+  Testordnern. Nachweis: vom Nutzer bereitgestellte Screenshots der Testausgabe.
+  Details in `docs/windows-abnahme-6964489.md`.
+- Schema, Nutzerdaten und Windows-Starter unverändert. Keine Merge- oder
+  Deployment-Freigabe durch diese Abnahme.
