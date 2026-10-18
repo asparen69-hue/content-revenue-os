@@ -87,9 +87,15 @@ The 8 criteria all count equally: Pain intensity, Urgency, Purchase intent, Cont
 
 Nach dem lokalen Start unter **http://localhost:8787/assistant.html** erreichbar.
 Quelltext einfügen, Analyseauftrag in einem vorhandenen oder kostenlosen KI-Zugang verwenden,
-JSON prüfen und nach dem Quellenabgleich den Export ausdrücklich freigeben.
+JSON einfügen (wird automatisch auf seine Struktur geprüft) und die lesbare Vorschau
+gegen die Quelle prüfen. Danach den Entwurf ausdrücklich freigeben.
 Unbekannte Werte bleiben leer; eine Strukturprüfung kann die Faktenprüfung nicht ersetzen.
-Der Export schreibt nichts in die Library. Erst **Daten → JSON importieren → Importieren** speichert.
+**Import vorbereiten → Jetzt ausdrücklich importieren** übernimmt genau einen neuen Eintrag
+mit Sicherung. Einfügen, Prüfen, Freigeben und Öffnen des Dialogs speichern noch nichts.
+Der optionale JSON-Download und **Daten → JSON importieren** bleiben verfügbar.
+Bei gesperrter Zwischenablage wird der Analyseauftrag zum manuellen Kopieren angezeigt.
+Bei einer ausgebliebenen Importantwort bitte zuerst den Stand in der Library prüfen;
+es gibt keine automatische Wiederholung.
 Details: [docs/ki-erfassungsassistent-v1.md](docs/ki-erfassungsassistent-v1.md).
 
 ## Tests
@@ -111,6 +117,7 @@ Zusätzliche Entwicklertests (Node erforderlich, keine Produktabhängigkeit):
 
 ```sh
 node tests/assistant-validation.test.js
+node tests/ui-helpers.test.js
 node tests/assistant-browser.test.js
 ```
 

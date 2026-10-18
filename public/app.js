@@ -62,20 +62,7 @@ function computeOverall(values) {
 }
 
 async function api(method, url, body, headers = {}) {
-  const opts = { method, headers: { ...headers } };
-  if (body !== undefined) {
-    opts.headers['Content-Type'] = 'application/json';
-    opts.body = JSON.stringify(body);
-  }
-  const res = await fetch(url, opts);
-  let data = null;
-  try { data = await res.json(); } catch { /* empty body */ }
-  if (!res.ok) {
-    const err = new Error((data && data.error) || `Anfrage fehlgeschlagen (${res.status})`);
-    err.details = (data && data.details) || [];
-    throw err;
-  }
-  return data;
+  return WinnerUi.request(method, url, body, headers);
 }
 
 async function loadItems() {
@@ -431,8 +418,8 @@ function setupDataMenu() {
     const file = fileInput.files[0];
     if (!file) return;
     let data;
-    try { data = JSON.parse(await file.text()); }
-    catch { toast('Diese Datei ist kein gültiges JSON. Es wurde nichts importiert.', true); return; }
+    try { data = await WinnerUi.readJsonFile(file); }
+    catch (error) { toast('Import abgebrochen. ' + error.message, true); return; }
     const list = Array.isArray(data) ? data : Array.isArray(data?.items) ? data.items : [data];
     const ok = await confirmDialog('JSON importieren?',
       `<p>Die Datei <strong>${esc(file.name)}</strong> enthält <strong>${list.length}</strong> Einträge.</p>

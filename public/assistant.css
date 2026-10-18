@@ -9,3 +9,5 @@ pre{white-space:pre-wrap;overflow-wrap:anywhere;background:#f4f6fa;padding:15px;
 small,.hint{color:#52627a}.error{color:#a32020}.ok{color:#176039}a{color:inherit}
 
 .approval input{width:auto;margin-right:8px}
+dialog{max-width:600px;border:1px solid #aebbd0;border-radius:12px;padding:24px}dialog::backdrop{background:#14213d88}
+dl{display:grid;grid-template-columns:minmax(130px,1fr) 3fr;gap:8px}dt{font-weight:650}dd{margin:0;white-space:pre-wrap;overflow-wrap:anywhere}details{margin:12px 0}

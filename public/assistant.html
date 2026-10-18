@@ -1,19 +1,26 @@
 <!doctype html>
 <html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>KI-Erfassungsassistent – Vorschau</title>
+<link rel="icon" href="data:,">
 <link rel="stylesheet" href="/assistant.css"></head><body>
 <header><strong>CONTENT REVENUE OS · KI-Erfassungsassistent (Entwicklungsversion)</strong></header>
 <main><p>Erstellt einen <strong>prüfbaren JSON-Entwurf</strong> für die Winner Library. Keine automatische Videoanalyse und keine automatische Speicherung. Unbekannte Daten leer lassen.</p>
 <section><h2>1. Quelle und KI-Vorbereitung</h2>
 <label for="source">Quelltext / Transkript / Beobachtungen</label><textarea id="source" placeholder="Hier den tatsächlichen Inhalt des Videos einfügen ..."></textarea>
 <button id="prompt" type="button">Analyseauftrag kopieren</button>
+<div id="prompt-fallback" hidden><label for="prompt-text">Analyseauftrag zum manuellen Kopieren</label><textarea id="prompt-text" readonly></textarea><p class="hint">Falls die Zwischenablage gesperrt ist: Text markieren und mit Strg+C kopieren.</p></div>
 <p class="hint">Füge den kopierten Auftrag in ChatGPT oder Claude ein und kopiere die JSON-Antwort anschließend unten hinein. Nutze einen vorhandenen oder kostenlosen Zugang; kein API-Schlüssel erforderlich.</p></section>
 <section><h2>2. JSON-Entwurf prüfen</h2>
 <label for="json">JSON aus der KI-Antwort</label><textarea id="json" spellcheck="false" placeholder='{"title":"Beispiel","platform":"Instagram","researchSource":"ChatGPT","status":"Discovered"}'></textarea>
-<button id="check" type="button">Entwurf prüfen</button><button id="export" type="button" disabled>JSON herunterladen</button>
-<label class="approval"><input id="approval" type="checkbox" disabled>Ich habe alle Angaben gegen die Quelle geprüft und gebe diesen Entwurf zum Export frei.</label>
-<p id="result" aria-live="polite"></p><pre id="preview" hidden></pre></section>
-<section><h2>3. Import nach Freigabe</h2><p>Prüfe alle Angaben gegen die Quelle. Lade die exportierte JSON-Datei anschließend in der Winner Library über <strong>Daten → JSON importieren</strong> hoch. Erst dort erfolgt nach Bestätigung eine Speicherung.</p><p><a href="/">Zur Winner Library</a></p></section></main>
+<p class="hint">Die Struktur wird nach dem Einfügen automatisch geprüft. Ein umschließender JSON-Codeblock ist erlaubt. Unbekannte Angaben bleiben leer.</p>
+<button id="check" type="button">Erneut prüfen</button>
+<p id="result" aria-live="polite"></p><div id="field-preview" hidden></div><details><summary>JSON-Vorschau anzeigen</summary><pre id="preview" hidden></pre></details>
+<label class="approval"><input id="approval" type="checkbox" disabled>Ich habe alle Angaben gegen die Quelle geprüft und gebe diesen Entwurf frei.</label></section>
+<section><h2>3. Geprüften Entwurf übernehmen</h2><p>Du kannst direkt hier importieren. Erst nach deiner abschließenden Bestätigung wird ein neuer Eintrag gespeichert und eine Sicherung erstellt.</p>
+<button id="import" type="button" disabled>Import vorbereiten</button><button id="export" class="secondary" type="button" disabled>Alternativ: JSON herunterladen</button>
+<p id="import-result" aria-live="polite"></p><p><a href="/">Zur Winner Library</a></p></section></main>
+<dialog id="import-dialog" aria-labelledby="import-title"><h2 id="import-title">Diesen Entwurf jetzt importieren?</h2><p id="import-summary"></p><p>Es wird genau ein neuer Eintrag angelegt. Vorhandene Einträge werden nicht überschrieben. Vorher wird eine Sicherung erstellt.</p><button id="import-cancel" class="secondary" type="button">Abbrechen</button><button id="import-confirm" type="button">Jetzt ausdrücklich importieren</button></dialog>
+<script src="/ui-helpers.js" defer></script>
 <script src="/assistant-validation.js" defer></script>
 <script src="/assistant.js" defer></script>
 </body></html>

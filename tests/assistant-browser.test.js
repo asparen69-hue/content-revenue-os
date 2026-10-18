@@ -105,7 +105,9 @@ test('real browser: CSP, evidence prompt, draft approval, invalidation and confi
   const schemaResponse = race.waitForResponse('**/api/schema');
   releaseSchema(); await schemaResponse;
   await race.evaluate(() => new Promise(resolve => setTimeout(resolve, 100)));
-  assert.equal(await race.locator('#approval').isDisabled(), true);
+  await race.waitForFunction(() => !document.getElementById('approval').disabled);
+  assert.equal(await race.locator('#approval').isChecked(), false);
+  assert.match(await race.locator('#preview').textContent(), /new/);
   assert.equal(await race.locator('#export').isDisabled(), true);
 
   // An upload and a cancelled confirmation never send a write request.
@@ -130,4 +132,90 @@ test('real browser: CSP, evidence prompt, draft approval, invalidation and confi
   assert.equal(records.find(r => r.title === draft.title).views, null);
   assert.ok((await fs.readdir(path.join(temp, 'data/backups'))).some(name => name.startsWith('winners-before-import-')));
   assert.deepEqual(errors, []);
+
+  // Direct assistant import removes the file round trip, never the explicit approval.
+  const direct = await context.newPage(), directWrites = [], directErrors = [];
+  direct.on('request', req => { if (req.method() !== 'GET') directWrites.push(req); });
+  direct.on('pageerror', error => directErrors.push(error.message));
+  await direct.goto(base + '/assistant.html');
+  await direct.locator('#json').fill('{"title":}');
+  await direct.waitForFunction(() => document.getElementById('result').textContent.includes('Das JSON ist nicht gültig'));
+  assert.equal(await direct.locator('#import').isDisabled(), true);
+  await direct.locator('#json').fill('```json\n{"title":"Direkter Entwurf","platform":"Other","views":null}\n```');
+  await direct.waitForFunction(() => !document.getElementById('approval').disabled);
+  assert.match(await direct.locator('#field-preview').textContent(), /PlattformSonstiges/);
+  assert.equal(await direct.locator('#import').isDisabled(), true);
+  assert.equal(directWrites.length, 0);
+  const beforeDirect = await fs.readFile(store, 'utf8');
+  await direct.locator('#approval').check();
+  await direct.locator('#import').click();
+  await direct.locator('#import-cancel').click();
+  assert.equal(directWrites.length, 0);
+  await direct.locator('#import').click();
+  await direct.keyboard.press('Escape');
+  assert.equal(directWrites.length, 0);
+  await direct.locator('#import').click();
+  await direct.evaluate(() => {
+    const input = document.getElementById('json');
+    input.value = '{"title":"Aktueller Entwurf"}'; input.dispatchEvent(new Event('input'));
+    document.getElementById('import-confirm').click();
+  });
+  assert.equal(await direct.locator('#import-dialog').evaluate(el => el.open), false);
+  assert.equal(directWrites.length, 0);
+  await direct.waitForFunction(() => !document.getElementById('approval').disabled);
+  await direct.locator('#approval').check();
+  let releaseImport, importRequested;
+  const waitImport = new Promise(resolve => { importRequested = resolve; });
+  const importGate = new Promise(resolve => { releaseImport = resolve; });
+  await direct.route('**/api/import', async route => { importRequested(); await importGate; await route.continue(); });
+  await direct.locator('#import').click();
+  await direct.locator('#import-confirm').click();
+  await waitImport;
+  assert.equal(await direct.locator('#json').isDisabled(), true);
+  assert.equal(await direct.locator('#import').isDisabled(), true);
+  assert.equal(await fs.readFile(store, 'utf8'), beforeDirect);
+  await direct.evaluate(() => document.getElementById('import-confirm').click());
+  const directResponse = direct.waitForResponse('**/api/import');
+  releaseImport();
+  assert.equal((await directResponse).status(), 200);
+  await direct.waitForFunction(() => document.getElementById('import-result').textContent.startsWith('Import abgeschlossen'));
+  assert.equal(directWrites.length, 1);
+  assert.equal(directWrites[0].headers()['x-winner-import-approved'], 'true');
+  assert.deepEqual(JSON.parse(directWrites[0].postData()), [{ title: 'Aktueller Entwurf', status: 'Discovered' }]);
+  assert.equal(await direct.locator('#import').isDisabled(), true);
+  assert.equal((await (await fetch(base + '/api/items')).json()).filter(r => r.title === 'Aktueller Entwurf').length, 1);
+
+  // Denied clipboard access leaves a usable, local manual-copy fallback.
+  await direct.goto(base + '/assistant.html');
+  await direct.evaluate(() => { navigator.clipboard.writeText = async () => { throw new Error('NotAllowedError'); }; });
+  await direct.locator('#source').fill('Titel: Belegt');
+  await direct.locator('#prompt').click();
+  await direct.locator('#prompt-fallback').waitFor({ state: 'visible' });
+  assert.match(await direct.locator('#result').textContent(), /Zwischenablage ist gesperrt/);
+  assert.match(await direct.locator('#prompt-text').inputValue(), /Titel: Belegt/);
+  await direct.locator('#source').fill('Andere Quelle');
+  assert.equal(await direct.locator('#prompt-fallback').isHidden(), true);
+
+  // Server refusal or an uncertain network outcome must not trigger an automatic retry.
+  await direct.unroute('**/api/import');
+  const afterDirect = await fs.readFile(store, 'utf8');
+  for (const networkFailure of [false, true]) {
+    await direct.goto(base + '/assistant.html');
+    await direct.route('**/api/import', route => networkFailure ? route.abort('failed') : route.fulfill({
+      status: 403, contentType: 'application/json', body: JSON.stringify({ error: 'Der Import wurde nicht freigegeben. Es wurde nichts importiert.' }),
+    }));
+    await direct.locator('#json').fill('{"title":"Nicht importieren"}');
+    await direct.waitForFunction(() => !document.getElementById('approval').disabled);
+    await direct.locator('#approval').check();
+    await direct.locator('#import').click();
+    await direct.locator('#import-confirm').click();
+    await direct.waitForFunction(() => document.getElementById('import-result').className === 'error');
+    assert.match(await direct.locator('#import-result').textContent(), networkFailure ? /zuerst in der Library prüfen/ : /nicht freigegeben/);
+    assert.equal(await direct.locator('#import').isDisabled(), true);
+    assert.equal(await fs.readFile(store, 'utf8'), afterDirect);
+    await direct.unroute('**/api/import');
+  }
+  assert.equal(directWrites.length, 3);
+  assert.deepEqual(directErrors, []);
+
 });

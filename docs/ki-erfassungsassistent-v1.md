@@ -8,7 +8,9 @@ Aus einem vom Nutzer bereitgestellten Videotranskript, einer Beschreibung oder e
 2. KI erstellt einen JSON-Entwurf mit ausschließlich **belegbaren** Angaben.
 3. Nicht beobachtbare Performancewerte, Followerzahlen, Umsätze, Scores und Angebotsdaten bleiben leer.
 4. Nutzer prüft den Entwurf gegen die Quelle und genehmigt ausdrücklich den Import.
-5. Die bestehende App importiert den geprüften JSON-Datensatz über **Daten → JSON importieren**. Keine automatische Schreibaktion ohne Freigabe.
+5. **Import vorbereiten** öffnet im Assistenten einen Bestätigungsdialog. Erst
+   **Jetzt ausdrücklich importieren** speichert einen neuen Eintrag mit Sicherung.
+   Alternativ bleibt der JSON-Dateiweg über **Daten → JSON importieren** verfügbar.
 
 ## Datenschema
 Die verbindlichen Schlüssel und Optionswerte stehen in `config/winner-fields.json` (Schema 2).
@@ -42,14 +44,25 @@ Mindestens `title` muss vorhanden sein. `sourceUrl` nur mit http(s)-URL, falls t
   Die Library setzt beim tatsächlichen Import weiterhin ihre bestehenden Standardwerte
   für `dateDiscovered` (heute) und `researchSource` (`Manual`); die Vorschau weist darauf hin.
 - Nach erfolgreicher Strukturprüfung muss der Nutzer den Quellenabgleich per Checkbox
-  bestätigen, bevor ein Download möglich ist. Änderungen an Quelle oder JSON sowie
+  bestätigen, bevor Download oder Vorbereitung des Imports möglich sind. Änderungen an Quelle oder JSON sowie
   erneute Prüfung setzen diese Freigabe zurück. Verspätete Schemaantworten dürfen
-  keinen veralteten Entwurf zum Export freischalten.
-- Der Assistent führt ausschließlich lesende Schemaanfragen aus. Der JSON-Download
-  enthält ein Array mit genau einem Datensatz ohne ID und überschreibt daher keinen
-  vorhandenen Eintrag. Der Import erfolgt weiterhin separat in der Winner Library.
+  keinen veralteten Entwurf freischalten. Automatische Strukturprüfungen erteilen keine Freigabe.
+- Der Assistent liest das Schema und sendet erst nach dem bestätigten Importdialog
+  genau einen Datensatz ohne ID an die bestehende lokale Importfunktion. Somit wird
+  ein neuer Eintrag angelegt; vorhandene Einträge werden nicht überschrieben.
+  Es werden keine Entwürfe im Browserspeicher oder auf dem Server zwischengespeichert.
+- Nach Eingabe/Paste wird die Struktur nach einer kurzen Pause automatisch geprüft.
+  Ein vollständiger umschließender Markdown-Codeblock wird entfernt; fehlerhaftes JSON
+  und zusätzliche Erklärtexte werden nicht geraten oder automatisch repariert.
+  Feldnamen und Optionswerte erscheinen in der Vorschau mit ihren deutschen Anzeigenamen.
+- Verbindungsprobleme, ungültiges JSON und fehlende Freigaben erhalten deutsche Hinweise.
+  Bei gesperrter Zwischenablage lässt sich der Analyseauftrag manuell kopieren.
+- Während eines Imports sind Eingaben und weitere Importaktionen gesperrt. Nach einem
+  Importversuch bleibt die Importaktion bis zu einer bewussten neuen Prüfung gesperrt.
+  Bei einer ausgebliebenen Antwort muss der Nutzer zuerst den Library-Stand prüfen;
+  es erfolgt keine automatische Wiederholung.
 - `/api/import` verlangt zusätzlich den Header `X-Winner-Import-Approved: true`.
-  Die Library sendet ihn erst nach Bestätigung der ausgewählten Datei. Externe lokale
+  Library und Assistent senden ihn erst nach der abschließenden Importbestätigung. Externe lokale
   Importwerkzeuge müssen ihn ebenfalls erst nach ausdrücklicher Nutzerfreigabe setzen;
   der Header dokumentiert diese Freigabe, ist aber kein Authentifizierungsnachweis.
 - Die JSON-Body-Verarbeitung erhält leere, einzelne und verschachtelte Arrays ohne
@@ -69,15 +82,22 @@ Playwright-Test startet ebenfalls seinen eigenen temporären Server.
 Am 18.10.2026 in der Linux-Cloud erfolgreich geprüft:
 
 - 43 Offline-Tests für die Validierung einschließlich des ASCII-Formats von `server.ps1`.
-- Erweiterte API-Suite: CRUD, Score, Unicode, Export, Importfreigabe, atomare
+- 7 Tests der gemeinsamen JSON-, Datei- und Anfragehilfen: deutsche Fehlermeldungen,
+  sichere Codeblock-Erkennung und keine automatische Wiederholung von Schreibanfragen.
+- 41 API-Prüfungen: CRUD, Score, Unicode, Export, deutsche JSON-/Freigabefehler, atomare
   Validierung, Array-Strukturen, Zahlenüberlauf und bestehende Sicherheitsprüfungen.
 - Alle 28 bisherigen UI-Prüfungen mit Chromium; der Sandbox-Teststarter blieb
   außerhalb des Repositorys. Windows-Starter und Windows-Edge-Test bleiben unverändert.
 - Browserablauf des Assistenten einschließlich CSP, Prompt, Freigabe, Download,
   Rücksetzen nach Änderungen, verspäteter Schemaantwort, Textdarstellung sowie
-  Importabbruch und bestätigtem Import mit Sicherung.
+  Importabbruch und bestätigtem Dateiimport mit Sicherung. Zusätzlich direkter Import
+  mit Checkbox und Dialog, Abbrechen/Escape, Änderung bei offenem Dialog, Sperre bei
+  laufendem Import und Doppelklick, Importfehler, unklare Netzwerkantwort,
+  automatische Strukturprüfung, Codeblock-Eingabe und Zwischenablage-Ersatzweg.
 
-Die Laufzeit in der Cloud war PowerShell 7.4.21. Ein echter Lauf unter **Windows
-PowerShell 5.1 und Microsoft Edge** bleibt offen. Der Server bleibt ASCII-only und
+Die vorherige Version (`5905a2f`) wurde laut Nutzer erfolgreich auf Windows getestet.
+Die hier dokumentierten neuen Änderungen wurden mit PowerShell 7.4.21 und Chromium
+in der Cloud geprüft; ihre erneute Abnahme auf **Windows PowerShell 5.1 und Edge**
+steht noch aus. Der Server bleibt ASCII-only und
 verwendet keine PowerShell-7-spezifischen Parameter oder Sprachkonstrukte.
 Es wurden keine kostenpflichtigen APIs, Abonnements oder Produktabhängigkeiten ergänzt.

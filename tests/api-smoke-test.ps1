@@ -99,6 +99,9 @@ Check 'CSV download header set' ([string]$r.headers['Content-Disposition'] -matc
 # --- import approval and malformed input: no writes, even for valid data
 $r = Call POST '/api/import' @(@{ title = 'must not be imported' })
 Check 'import without explicit approval blocked (403)' ($r.status -eq 403)
+Check 'missing approval explained in German' (($r.text | ConvertFrom-Json).error -match 'nicht freigegeben.*nichts importiert')
+$r = Call POST '/api/import' '{"title":}' @{ 'X-Winner-Import-Approved' = 'true' }
+Check 'malformed JSON explained in German' ($r.status -eq 400 -and ($r.text | ConvertFrom-Json).error -match 'Die Anfrage.*JSON')
 foreach ($raw in @('[]', '[null]', '[[{"title":"nested"}]]', '{"items":[]}', '{"items":[null]}')) {
     $r = Call POST '/api/import' $raw @{ 'X-Winner-Import-Approved' = 'true' }
     Check "invalid import shape rejected: $raw" ($r.status -eq 400) $r.text

@@ -313,7 +313,7 @@ function Send-StaticFile($Ctx, [string]$UrlPath) {
     $rel = [Uri]::UnescapeDataString($UrlPath).TrimStart('/') -replace '[/\\]', [string]$separator
     $full = [IO.Path]::GetFullPath((Join-Path $PublicDir $rel))
     if (-not $full.StartsWith($PublicDir + $separator, [StringComparison]::OrdinalIgnoreCase) -or -not (Test-Path -LiteralPath $full -PathType Leaf)) {
-        Send-Error $Ctx 404 'Not found'
+        Send-Error $Ctx 404 'Die angeforderte Datei wurde nicht gefunden.'
         return
     }
     $ext = [IO.Path]::GetExtension($full).ToLowerInvariant()
@@ -336,9 +336,9 @@ function Invoke-Request($Ctx) {
     if ($method -in @('POST', 'PUT', 'DELETE')) {
         # Block other websites open in the browser from changing local data.
         $origin = $req.Headers['Origin']
-        if ($origin -and ($AllowedOrigins -notcontains $origin)) { Send-Error $Ctx 403 'Cross-origin requests are not allowed.'; return }
-        if ($method -ne 'DELETE' -and ([string]$req.ContentType) -notlike 'application/json*') { Send-Error $Ctx 415 'Content-Type must be application/json.'; return }
-        if ($req.ContentLength64 -gt $MaxBodyBytes) { Send-Error $Ctx 413 'Request too large (max 20 MB).'; return }
+        if ($origin -and ($AllowedOrigins -notcontains $origin)) { Send-Error $Ctx 403 "Anfragen von anderen Webseiten sind nicht erlaubt. Bitte die Winner Library direkt unter http://localhost:$Port/ verwenden."; return }
+        if ($method -ne 'DELETE' -and ([string]$req.ContentType) -notlike 'application/json*') { Send-Error $Ctx 415 "Die Anfrage muss als JSON gesendet werden (Content-Type: application/json)."; return }
+        if ($req.ContentLength64 -gt $MaxBodyBytes) { Send-Error $Ctx 413 "Die Anfrage ist zu gross. Bitte h${oe}chstens 20 MB senden."; return }
     }
 
     if ($path -eq '/api/health' -and $method -eq 'GET') { Send-Json $Ctx 200 @{ ok = $true; items = $script:Items.Count }; return }
@@ -352,7 +352,7 @@ function Invoke-Request($Ctx) {
         if ($method -eq 'GET') { Send-Json $Ctx 200 @($script:Items.ToArray()); return }
         if ($method -eq 'POST') {
             $body = Read-JsonBody $Ctx
-            if ($null -eq $body -or $body -is [array]) { Send-Error $Ctx 400 'Send one item as a JSON object. Use /api/import for several items.'; return }
+            if ($null -eq $body -or $body -is [array]) { Send-Error $Ctx 400 "Bitte genau einen Eintrag als JSON-Objekt senden. Mehrere Eintr${ae}ge bitte ${ue}ber den JSON-Import laden."; return }
             $r = ConvertTo-CleanItem $body $true
             $r.item['id'] = [guid]::NewGuid().ToString()   # server always assigns ids for new items
             $r.item['createdAt'] = $r.item['updatedAt']
@@ -375,7 +375,7 @@ function Invoke-Request($Ctx) {
         if ($method -eq 'PUT') {
             # Merge: fields not sent keep their current value, so agents can send partial updates.
             $body = Read-JsonBody $Ctx
-            if ($null -eq $body -or $body -is [array]) { Send-Error $Ctx 400 'Send the changes as one JSON object.'; return }
+            if ($null -eq $body -or $body -is [array]) { Send-Error $Ctx 400 "Bitte die Aenderungen als ein einzelnes JSON-Objekt senden."; return }
             $merged = [ordered]@{}
             foreach ($p in $existing.PSObject.Properties) { $merged[$p.Name] = $p.Value }
             foreach ($p in $body.PSObject.Properties) { $merged[$p.Name] = $p.Value }
@@ -414,7 +414,7 @@ function Invoke-Request($Ctx) {
 
     if ($path -eq '/api/import' -and $method -eq 'POST') {
         # The UI sends this only after the user confirms the selected file.
-        if ($req.Headers['X-Winner-Import-Approved'] -cne 'true') { Send-Error $Ctx 403 'Explicit import approval is required.'; return }
+        if ($req.Headers['X-Winner-Import-Approved'] -cne 'true') { Send-Error $Ctx 403 "Der Import wurde nicht freigegeben. Bitte den Entwurf pr${ue}fen und den Import ausdr${ue}cklich best${ae}tigen. Es wurde nichts importiert."; return }
         $body = Read-JsonBody $Ctx
         # Accepts our own export format ({ items: [...] }) or a plain array of items.
         if ($null -eq $body) { $incoming = @() }
@@ -453,8 +453,8 @@ function Invoke-Request($Ctx) {
         return
     }
 
-    if ($path.StartsWith('/api/')) { Send-Error $Ctx 404 'Unknown API endpoint or method.'; return }
-    if ($method -ne 'GET') { Send-Error $Ctx 405 'Method not allowed.'; return }
+    if ($path.StartsWith('/api/')) { Send-Error $Ctx 404 "Diese API-Adresse oder Anfragemethode ist nicht verf${ue}gbar."; return }
+    if ($method -ne 'GET') { Send-Error $Ctx 405 "Diese Anfragemethode ist nicht erlaubt."; return }
     Send-StaticFile $Ctx $path
 }
 
@@ -488,8 +488,11 @@ try {
             Invoke-Request $ctx
         } catch {
             $msg = $_.Exception.Message
-            Write-Host "Request error ($($ctx.Request.HttpMethod) $($ctx.Request.Url.AbsolutePath)): $msg" -ForegroundColor Yellow
-            try { Send-Error $ctx 400 $msg } catch { }
+            Write-Host "Fehler bei Anfrage ($($ctx.Request.HttpMethod) $($ctx.Request.Url.AbsolutePath)): $msg" -ForegroundColor Yellow
+            # Never expose raw .NET/PowerShell exception text to the browser.
+            $friendly = "Die Anfrage konnte nicht verarbeitet werden. Bitte Eingaben und Server-Fenster pr${ue}fen."
+            if ($msg -like 'Die Anfrage*') { $friendly = $msg }
+            try { Send-Error $ctx 400 $friendly } catch { }
         }
     }
 } finally {

@@ -44,3 +44,21 @@ After making the label changes:
 2. Confirm the app still loads.
 3. Confirm the existing data is unchanged.
 4. Report exactly which files were modified.
+
+
+## 2026-10-18 – KI-Erfassungsassistent: deutsche Meldungen und direkter Import
+
+- Deutsche Hinweise für JSON-, Datei-, Verbindungs- und Importfreigabefehler;
+  unverarbeitete Laufzeitfehler erscheinen nicht mehr als Fehlermeldung im Browser.
+- Automatische Strukturprüfung nach Eingabe mit optionaler manueller Wiederholung.
+  Deutsche Feldvorschau, sichere Erkennung umschließender JSON-Codeblöcke und
+  manueller Kopierweg bei gesperrter Zwischenablage.
+- Direkter Import aus dem Assistenten nach Quellenabgleich und abschließender
+  Dialogbestätigung. Datei-Export/-Import bleiben verfügbar. Keine automatischen
+  Importe oder Wiederholungen, keine neuen Dienste oder API-Schlüssel.
+- Während eines Importversuchs sind Eingaben gesperrt; Doppelklicks senden nicht
+  erneut. Quelltext- oder Entwurfsänderungen setzen die Freigabe zurück.
+- Isoliert geprüft: 43 Validierungstests, 7 Hilfsfunktionstests, 41 API-Prüfungen,
+  28 bestehende UI-Prüfungen und der erweiterte Assistenten-Browsertest.
+- Windows-Tests der Vorversion laut Nutzer erfolgreich; erneute Windows-Abnahme
+  dieser Änderungen steht aus. Schema, Nutzerdaten und Windows-Starter unverändert.
