@@ -98,6 +98,14 @@ Bei einer ausgebliebenen Importantwort bitte zuerst den Stand in der Library pr�
 es gibt keine automatische Wiederholung.
 Details: [docs/ki-erfassungsassistent-v1.md](docs/ki-erfassungsassistent-v1.md).
 
+## Vorbereitung einer lokalen Übernahme
+
+Der [Windows-Übernahmeplan](docs/windows-uebernahmeplan.md) legt die acht
+Laufzeitdateien des getesteten Commits `6964489`, Sicherung und Rücksetzen fest.
+`tools/windows-uebernahme-pruefen.ps1` vergleicht den vorhandenen Dateistand nur
+lesend und schreibt einen Bericht außerhalb der Library. Es installiert nichts.
+Sicherung und tatsächlicher Austausch brauchen weiterhin ausdrückliche Freigaben.
+
 ## Tests
 
 Die Tests gegen eine **temporäre Kopie ohne vorhandene Geschäftsdaten** ausführen:

@@ -1,0 +1,84 @@
+{
+  "baseCommit": "e834f80f08d0cbca039c60c701eabd8e14bad1e7",
+  "targetCommit": "696448925c4a3507a38a7cb7039e0dbd20a5bbb0",
+  "normalization": "UTF-8 ohne BOM; CRLF wird zu LF; sonst unveraendert",
+  "files": [
+    {
+      "path": "server.ps1",
+      "role": "runtime",
+      "baseNormalizedSha256": "df6993a1d6ffc087201843e2ec1e27632b2744f117ee131058536c6ab039b1e9",
+      "targetNormalizedSha256": "52fccd22aa6357e5566074d5dc63aac268bf3d1684d4e5246cf20f80f5e4cba6",
+      "targetSha256": "52fccd22aa6357e5566074d5dc63aac268bf3d1684d4e5246cf20f80f5e4cba6"
+    },
+    {
+      "path": "public/app.js",
+      "role": "runtime",
+      "baseNormalizedSha256": "1b3ec94bfdfdabf8f2ccf93fd66c1f5cee2a72f6ad76cb3c7062f6e961c4b56b",
+      "targetNormalizedSha256": "d1f4d6f272c3b65af7c9851f564a1ec7e808299236744917c7fdfba5c1113202",
+      "targetSha256": "d1f4d6f272c3b65af7c9851f564a1ec7e808299236744917c7fdfba5c1113202"
+    },
+    {
+      "path": "public/index.html",
+      "role": "runtime",
+      "baseNormalizedSha256": "f44d1f6dc55203d67867e3887568d8a1fc9e9c848a2cd0bb8b867e8a8f4862fa",
+      "targetNormalizedSha256": "d60149c2e0eb276507ff4aec54112d29e38b14af415fe7e8c6b3dc96034cf85a",
+      "targetSha256": "d60149c2e0eb276507ff4aec54112d29e38b14af415fe7e8c6b3dc96034cf85a"
+    },
+    {
+      "path": "public/assistant.html",
+      "role": "runtime",
+      "baseNormalizedSha256": null,
+      "targetNormalizedSha256": "275dea28d5044b5f76272125be61aad255d6d9a4e6770faacdc3bb7b6bb4abcd",
+      "targetSha256": "275dea28d5044b5f76272125be61aad255d6d9a4e6770faacdc3bb7b6bb4abcd"
+    },
+    {
+      "path": "public/assistant.css",
+      "role": "runtime",
+      "baseNormalizedSha256": null,
+      "targetNormalizedSha256": "27ec2fc9e213a691dfc245415ff51cbd7cd110f5ff254b0df109a95d825277fe",
+      "targetSha256": "27ec2fc9e213a691dfc245415ff51cbd7cd110f5ff254b0df109a95d825277fe"
+    },
+    {
+      "path": "public/assistant.js",
+      "role": "runtime",
+      "baseNormalizedSha256": null,
+      "targetNormalizedSha256": "557e33f11cfc71f97fb2d21699fe613ef882431dc48e44f1026454e407a1b749",
+      "targetSha256": "557e33f11cfc71f97fb2d21699fe613ef882431dc48e44f1026454e407a1b749"
+    },
+    {
+      "path": "public/assistant-validation.js",
+      "role": "runtime",
+      "baseNormalizedSha256": null,
+      "targetNormalizedSha256": "b007e7ef68d284643bdc31a5c3d00a31e3ec970f77503c694d238e22820d4e1d",
+      "targetSha256": "b007e7ef68d284643bdc31a5c3d00a31e3ec970f77503c694d238e22820d4e1d"
+    },
+    {
+      "path": "public/ui-helpers.js",
+      "role": "runtime",
+      "baseNormalizedSha256": null,
+      "targetNormalizedSha256": "d58820ffcfeda1b1742733f9ee9985bf6dff1f7630d17b3e47b72d430e00ef1f",
+      "targetSha256": "d58820ffcfeda1b1742733f9ee9985bf6dff1f7630d17b3e47b72d430e00ef1f"
+    },
+    {
+      "path": "config/winner-fields.json",
+      "role": "protected",
+      "baseNormalizedSha256": "93cbca1913b037d25d45ac47e4b7af50cf314ce2465190872db0c95c81508442",
+      "targetNormalizedSha256": "93cbca1913b037d25d45ac47e4b7af50cf314ce2465190872db0c95c81508442",
+      "targetSha256": "93cbca1913b037d25d45ac47e4b7af50cf314ce2465190872db0c95c81508442"
+    },
+    {
+      "path": "config/seed.json",
+      "role": "protected",
+      "baseNormalizedSha256": "ed743a7673193c6b67fd792630c9c8e8a0becec45af941e349d3079220b2d2e7",
+      "targetNormalizedSha256": "ed743a7673193c6b67fd792630c9c8e8a0becec45af941e349d3079220b2d2e7",
+      "targetSha256": "ed743a7673193c6b67fd792630c9c8e8a0becec45af941e349d3079220b2d2e7"
+    },
+    {
+      "path": "Start-WinnerLibrary.bat",
+      "role": "protected",
+      "baseNormalizedSha256": "4f1a4c1c7cc65fa1e6fde4db02ae520fc03687d2f641279093a114fab9863e76",
+      "targetNormalizedSha256": "4f1a4c1c7cc65fa1e6fde4db02ae520fc03687d2f641279093a114fab9863e76",
+      "targetSha256": "4f1a4c1c7cc65fa1e6fde4db02ae520fc03687d2f641279093a114fab9863e76"
+    }
+  ]
+}

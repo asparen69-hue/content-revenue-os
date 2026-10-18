@@ -66,3 +66,16 @@ After making the label changes:
   Details in `docs/windows-abnahme-6964489.md`.
 - Schema, Nutzerdaten und Windows-Starter unverändert. Keine Merge- oder
   Deployment-Freigabe durch diese Abnahme.
+
+
+## 2026-10-18 – Vorbereitung der sicheren lokalen Übernahme
+
+- Datei-, Sicherungs- und Rücksetzplan für den getesteten Anwendungscode `6964489`.
+- Manifest mit Prüfsummen für acht Laufzeitdateien und drei geschützte Vergleichsdateien.
+- Lesendes PowerShell-Prüfskript; Bericht außerhalb der Library. Keine Installation,
+  kein Start/Stop der Anwendung und kein Einlesen oder Ändern von Nutzerdaten.
+- Acht isolierte Tests der Prüfsummen, Dateierkennung, Konflikte und Schreibfreiheit
+  unter Linux/PowerShell 7.4.21 bestanden. Windows-Ausführung dieser neuen
+  Vorbereitung ist der nächste Schritt; vorhandene Windows-Abnahme bleibt gültig.
+- Anwendungscode, Konfiguration und Nutzerdaten unverändert. Keine Übernahme
+  in `D:\CONTENT-REVENUE-OS`, kein Merge und kein Deployment ausgeführt.
