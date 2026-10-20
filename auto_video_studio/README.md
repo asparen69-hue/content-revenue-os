@@ -37,3 +37,18 @@ Ein einziges Fahrzeug; korrekte Proportionen, Felgen, Lack und Interieur; mindes
 
 ## Nächster Entwicklungsschritt
 ComfyUI-Workflow für Referenzbild → Wan 2.2 Image-to-Video integrieren und die entstandenen Clips automatisiert in die Projektdatei übernehmen. Das ist **noch nicht implementiert**.
+
+## ComfyUI-Verbindung (neu)
+
+`comfyui_runner.py` ist die Schnittstelle für einen bereits installierten und lokal laufenden ComfyUI-Server. Der Runner installiert **keine** Modelle und ist bislang **nicht auf dem Nutzer-PC getestet**.
+
+1. ComfyUI und ein Wan-2.2-Image-to-Video-Workflow müssen lokal vorhanden sein. Das benötigte Modell muss heruntergeladen und in ComfyUI verfügbar sein.
+2. Workflow in ComfyUI im **API-Format** exportieren (nicht als normales UI-Workflow-JSON). Der Workflow muss ein `LoadImage`-Node, ein Prompt-Node mit `inputs.text` und einen Video-Speicher-Node enthalten.
+3. Node-IDs aus der API-JSON-Datei ablesen.
+4. Beispielaufruf (Node-IDs nur Platzhalter, an eigene Datei anpassen):
+
+```powershell
+python auto_video_studio/comfyui_runner.py --workflow wan_i2v_api.json --image fahrzeug_front.png --prompt "Photorealistic automotive tracking shot, consistent vehicle, no logos" --image-node 12 --prompt-node 6 --output generated_clips
+```
+
+Der Runner nutzt standardmäßig `http://127.0.0.1:8188`, lädt das Referenzbild hoch, startet den Workflow und holt erzeugte Videodateien aus der ComfyUI-History ab. Er kann nur funktionieren, wenn der Workflow zum installierten Modell passt. **Es wird nicht behauptet, dass Wan 2.2 auf dem Rechner bereits installiert ist.**
